@@ -1,101 +1,4 @@
-import datetime
-import sqlite3
-from sqlite3 import Error
-from robot.libraries.BuiltIn import BuiltIn
 
-class StoreResultsListener:
-
-    ROBOT_LISTENER_API_VERSION = 2
-
-    def __init__(self):
-        self.total_tests = 0
-        self.passed_tests = 0
-        self.failed_tests = 0
-    
-        self.PRE_RUNNER = 0
-        self.start_time = datetime.datetime.now().time().strftime('%H:%M:%S')
-        self.date_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    def start_suite(self, name, attrs):
-        self.test_count = len(attrs['tests'])
-
-    def end_test(self, name, attrs):
-        if self.test_count != 0:
-            self.total_tests += 1
-        
-        if attrs['status'] == 'PASS':
-            self.passed_tests += 1
-        else:
-            self.failed_tests += 1
-
-    def close(self):
-        self.end_time = datetime.datetime.now().time().strftime('%H:%M:%S')
-        self.total_time=(datetime.datetime.strptime(self.end_time,'%H:%M:%S') - datetime.datetime.strptime(self.start_time,'%H:%M:%S'))
-
-        # Connect to db, if db doesn't exist create new one
-        self.con = sql_connection()
-        sql_table(self.con)
-
-        entities = (str(self.date_now), str(self.total_tests), str(self.passed_tests), str(self.failed_tests), str(self.total_time))
-        sql_insert(self.con, entities)
-        generate_html_report(self.con)
-
-'''
-
-# * # * # * # * Re-usable methods out of class * # * # * # * #
-
-''' 
-
-def get_current_date_time(format,trim):
-    t = datetime.datetime.now()
-    if t.microsecond % 1000 >= 500:  # check if there will be rounding up
-        t = t + datetime.timedelta(milliseconds=1)  # manually round up
-    if trim:
-        return t.strftime(format)[:-3]
-    else:
-        return t.strftime(format)
-
-def sql_connection():
-    try: 
-        con = sqlite3.connect('historical_results_do_not_delete.db')
-        return con 
-    except Error: 
-        print(Error)
-
-def sql_table(con): 
-    cursorObj = con.cursor()
-    try:
-        cursorObj.execute("CREATE TABLE IF NOT EXISTS results(execution_date text, total_tests text, passed_tests text, failed_tests text, duration text)") 
-        con.commit()
-    except Error:
-        print(Error)
-
-def sql_insert(con, entities):
-    cursorObj = con.cursor()
-    cursorObj.execute('INSERT INTO results(execution_date, total_tests, passed_tests, failed_tests, duration) VALUES(?, ?, ?, ?, ?)', entities)
-    con.commit()
-
-def generate_html_report(con): 
-
-    head = get_html_head_text()
-    body = get_html_body()    
-    script = get_html_footer()
-    table_content = ""
-
-    cursorObj = con.cursor() 
-    cursorObj.execute('SELECT * FROM results') 
-    rows = cursorObj.fetchall() 
-    for row in rows:
-        table_content += add_and_get_table_content(row)
-
-    historical_results_file = open('HistoricResults.html','w')
-    table_content_html = "<tbody>" + str(table_content) + "</tbody></table></div>"
-    page_content = str(head) + str(body) +  str(table_content_html) + str(script)
-    historical_results_file.write(page_content)
-    historical_results_file.close()
-
-def get_html_head_text():
-    head = """
     <!DOCTYPE doctype html>
     <html lang="en">
 
@@ -138,11 +41,7 @@ def get_html_head_text():
             }
         </style>
     </head>
-    """
-    return head
-
-def get_html_body():
-    body = """
+    
     <body>
     <div class="loader"></div>
         <div class="main col-md-12"> 
@@ -170,11 +69,103 @@ def get_html_body():
                         <th>Duration</th>
                     </tr>
                 </thead>
-    """
-    return body
-
-def get_html_footer():
-    footer = """
+    <tbody>
+    <tr>
+        <td align="center">2019-06-07 15:57:37</td>
+        <td align="center">9</td>
+        <td align="center" style="color: green">7</td>
+        <td align="center" style="color: red">2</td>
+        <td align="center">0:00:18</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 15:58:31</td>
+        <td align="center">9</td>
+        <td align="center" style="color: green">3</td>
+        <td align="center" style="color: red">6</td>
+        <td align="center">0:00:18</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 15:59:38</td>
+        <td align="center">9</td>
+        <td align="center" style="color: green">9</td>
+        <td align="center" style="color: red">0</td>
+        <td align="center">0:00:18</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 16:17:32</td>
+        <td align="center">9</td>
+        <td align="center" style="color: green">8</td>
+        <td align="center" style="color: red">1</td>
+        <td align="center">0:00:18</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 16:18:58</td>
+        <td align="center">9</td>
+        <td align="center" style="color: green">8</td>
+        <td align="center" style="color: red">1</td>
+        <td align="center">0:00:18</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 16:19:34</td>
+        <td align="center">9</td>
+        <td align="center" style="color: green">9</td>
+        <td align="center" style="color: red">0</td>
+        <td align="center">0:00:18</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 16:22:30</td>
+        <td align="center">10</td>
+        <td align="center" style="color: green">1</td>
+        <td align="center" style="color: red">9</td>
+        <td align="center">0:00:20</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 16:26:02</td>
+        <td align="center">10</td>
+        <td align="center" style="color: green">5</td>
+        <td align="center" style="color: red">5</td>
+        <td align="center">0:00:20</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 16:29:31</td>
+        <td align="center">10</td>
+        <td align="center" style="color: green">9</td>
+        <td align="center" style="color: red">1</td>
+        <td align="center">0:00:20</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 16:30:27</td>
+        <td align="center">10</td>
+        <td align="center" style="color: green">10</td>
+        <td align="center" style="color: red">0</td>
+        <td align="center">0:00:21</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 16:31:33</td>
+        <td align="center">10</td>
+        <td align="center" style="color: green">0</td>
+        <td align="center" style="color: red">10</td>
+        <td align="center">0:00:20</td>
+    </tr>
+    
+    <tr>
+        <td align="center">2019-06-07 16:36:13</td>
+        <td align="center">10</td>
+        <td align="center" style="color: green">4</td>
+        <td align="center" style="color: red">6</td>
+        <td align="center">0:00:20</td>
+    </tr>
+    </tbody></table></div>
             <div class="row">
                 <div class="col-md-12" style="height:25px;width:auto;">
                     <p class="text-muted" style="text-align:center;font-size:9px">
@@ -289,23 +280,4 @@ def get_html_footer():
                 });
             </script>
     </body>
-    """
-    return footer
-
-def add_and_get_table_content(list_items):
-    table_content = """
-    <tr>
-        <td align="center">execution_date</td>
-        <td align="center">total_tests</td>
-        <td align="center" style="color: green">passed_tests</td>
-        <td align="center" style="color: red">failed_tests</td>
-        <td align="center">duration</td>
-    </tr>
-    """
-    table_content = table_content.replace("execution_date",list_items[0])
-    table_content = table_content.replace("total_tests",list_items[1])
-    table_content = table_content.replace("passed_tests",list_items[2])
-    table_content = table_content.replace("failed_tests",list_items[3])
-    table_content = table_content.replace("duration",list_items[4])
     
-    return table_content
