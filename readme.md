@@ -29,6 +29,6 @@ Aim of the project is to store execution results in local database and create ht
 
 ### Current status
 
- - This idea is still in draft (ideas and contribution is much appreciated)
+ - This idea is still in draft (ideas and contribution are much appreciated)
 
 > Inspired from [robotframework/dbbot](https://github.com/robotframework/DbBot)
