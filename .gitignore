@@ -1,3 +1,5 @@
+*.html
+*.db
 *.log
 *.xml
 __pycache__
