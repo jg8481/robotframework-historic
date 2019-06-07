@@ -2,6 +2,8 @@
 
 Aim of the project is to store execution results in local database and create html report based on historical data
 
+Sample Report: [link](https://robotframework-historic.netlify.com/)
+
 ## How it works
 
  - Capture execution results using robotframework listener
