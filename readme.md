@@ -13,6 +13,13 @@ Sample Report: [link](https://robotframework-historic.netlify.com/)
      - Failed test
      - Duration
 
+ - Capture test execution results using robotframework listener
+     - Executed On
+     - Test Case
+     - Status
+     - Duration
+     - Error Message
+
  - Store captured results into sqlite3 database (inbuilt in python)
 
  - Generate html report based on available data in database
